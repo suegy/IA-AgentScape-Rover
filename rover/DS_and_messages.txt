@@ -1,0 +1,166 @@
+
+	//The run method of the agent
+	@Override
+	public void run() {
+		super.run();
+				
+		int scen = getScenario();
+		
+		AgentHandle[] handles;
+		handles = null;
+		
+		numAgents = 0;  //set this based on the scenario
+
+		//if this is a multi-agent scenario
+		if(numAgents > 1) {
+				
+			DirectoryService ds = null;
+			DSRecordIdentifier rid = null;
+			
+			try {
+				//bind to the DS
+				ds = this.getServiceBroker().bind(DirectoryService.class);
+				 
+				//create a new record in the DS
+				rid = new DSRecordIdentifier(getPrimaryHandle());				
+				ds.createRecord(rid);
+				
+				//add team name and handle to this entry
+				ds.addEntry(rid, "team", "tristan");
+				ds.addEntry(rid, "handle", getPrimaryHandle());
+		 
+			} catch (Exception e1) {
+				e1.printStackTrace();
+				return;
+			}
+					
+			
+			int agentsFound = 0;		
+			ArrayList<AgentHandle> tmphandles = new ArrayList<AgentHandle>();
+			
+			//keep checking the DS until the correct number of agents have been found
+			while(agentsFound < numAgents) {
+		
+				agentsFound = 0;
+				tmphandles.clear();
+				
+				try {
+					
+					//search the DS for records with our team
+					Collection<DSRecord> result;					
+					result = ds.search("team=tristan");
+					
+					for (DSRecord record : result) {
+						//add the handle from each record to the list
+						agentsFound++;
+						tmphandles.add((AgentHandle) record.getValue("handle"));
+					}
+					
+				} catch (QuerySyntaxException e) {
+					e.printStackTrace();
+					return;
+				}
+	
+				try {
+					//sleep for a bit
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+					return;
+				}
+			}
+		
+			//create an array to hold the handles
+			handles = tmphandles.toArray(new AgentHandle[] {});
+			
+			//now remove the records from the DS
+			//so we can restart the world and not find
+			//old agents
+			try {
+				ds.deleteRecord(rid);
+			} catch (DirectoryServiceException e1) {				
+				e1.printStackTrace();
+				return;
+			}
+		
+		}
+		
+		//next we will sort the list of handles
+		//which gives each of our agents a unique index
+		//which can be used to decide which agent does what
+		
+		int myIndex = 0;
+		
+		if(numAgents > 1) {
+			//sort the array
+			Arrays.sort(handles, new Comparator<AgentHandle>() {
+				@Override
+				public int compare(AgentHandle o1, AgentHandle o2) {
+					return o1.toString().compareTo(o2.toString());
+				}			
+			});
+
+			//figure out what this agent's index is
+			for(int i = 0; i < handles.length; i++) {
+				if(handles[i].equals(getPrimaryHandle())) {
+					myIndex = i;
+					break;
+				}
+			}			
+		}
+		
+		
+		/* set the stats for each agent here,
+		   based on the scenario and what the agent's
+		   index is
+		*/
+		
+		
+		try {			
+			//set the attribs for this agent
+			setAttributes(maxSpeed, maxRange, maxLoad);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+						
+		if(numAgents > 1) {
+
+			//needs to be called from run()
+			//listening for messages on a different thread
+			//seems to break things
+
+			listenForMessages();					
+		}
+		
+	}
+	
+	
+	void listenForMessages() {
+	
+		//keep listening while agent is running
+		while(agentRunning()) {
+			
+			try {
+				//non-blocking call to receive.
+				List<Envelope> envs = receiveMessages(false);
+				for(Envelope env : envs) 
+				{
+					//DO SOMETHING WITH THE RECEIVED MESSAGE HERE
+					
+				}
+			} catch (AgentScapeException e) {
+				e.printStackTrace();
+				break;
+			}
+			
+			try {
+				//sleep for a bit
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+				break;
+			}
+			
+		}		
+		
+	}

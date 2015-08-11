@@ -1,0 +1,54 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>rover</groupId>
+  <artifactId>rover-monitor</artifactId>
+  <version>0.0.1</version>
+  <parent>
+    <groupId>org.iids.aos</groupId>
+    <artifactId>agentscape</artifactId>
+    <version>2.0-m2</version>
+  </parent>
+  <properties>
+    <org.iids.aos.install.type>agent</org.iids.aos.install.type>
+    <org.iids.aos.install.path>/home/felix/agentscape</org.iids.aos.install.path>
+  <!-- optional -->
+  </properties>
+  <repositories>
+   <repository>
+      <id>agentscape-public</id>
+      <url>http://repo.agentscape.org/repo</url>
+    </repository>
+  </repositories>
+   <dependencies>
+    <dependency>
+      <groupId>org.iids.aos</groupId>
+      <artifactId>agentscape-core</artifactId>
+      <version>2.0-m2</version>
+      <scope>provided</scope>
+    </dependency>   
+     <dependency>
+      <groupId>rover</groupId>
+      <artifactId>rover.shared</artifactId>
+      <version>0.0.1</version>
+      <scope>compile</scope>
+    </dependency>
+  </dependencies>
+  <build>
+  <plugins>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-jar-plugin</artifactId>
+      <configuration>
+        <archive>
+          <manifest>
+            <mainClass>rover.MonitorAgent</mainClass>
+            <addClasspath>true</addClasspath>
+          </manifest>
+        </archive>
+      </configuration>
+    </plugin>
+ </plugins>
+</build>
+  <modules>
+  </modules>
+</project>

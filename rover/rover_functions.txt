@@ -1,0 +1,61 @@
+
+Rover Functions
+===============
+
+void setTeam(String team)
+
+Sets the team name for the rover.  This has to be done before the world starts.
+
+
+void setAttributes(int speed, int scanRange, int maxLoad)
+
+Sets the attributes for the rover.  This has to be done before the world starts.
+The total attributes have to add up to 9 and speed has to be at least 1.
+
+void move(double xOffset, double yOffset, double speed)
+
+Moves the rover to a specified offset from its current position.  The rover travels
+at the specified speed.  The power used per second is 2 * (speed / maxSpeed) where
+maxSpeed is the rover's speed attribute.
+
+void scan(double range)
+
+Scans for resources, rovers, and bases around the rover.  The actual radius of the 
+scan is 2 * range.  Each scan lasts 5 seconds and the power used per
+second is 2 * (range / maxRange).
+
+void collect()
+
+Collects resources from the world.  Each collect only collects one resource.  Each
+call takes 5 seconds and costs 1 energy per second.
+
+void deposit()
+
+Deposit a resource from the rover to the world.  If the rover is < .1 distance 
+away from a base, it will be deposited in that base.  Otherwise, it is deposited in
+the world.
+
+double getEnergy()
+
+Returns the current energy of the rover.
+
+int getWorldHeight()
+
+Returns the height of the world.
+
+int getWorldWidth()
+
+Returns the width of the world.
+
+int getWorldResources()
+
+Returns the total number of resources in the world.
+
+boolean isWorldCompetitive()
+
+Returns true if there are other teams of agents in the world.
+
+int getScenario()
+
+Returns the current scenario.
+

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>edu.stanford</groupId>
+  <artifactId>protege</artifactId>
+  <version>3.4.4</version>
+  <description>POM was created from install:install-file</description>
+  <parent>
+    <groupId>org.iids.aos</groupId>
+    <artifactId>agentscape</artifactId>
+    <version>2.0-m2</version>
+  </parent>
+  <properties>
+    <org.iids.aos.install.type>shared</org.iids.aos.install.type>
+    <org.iids.aos.install.path>${user.home}/agents-coursework/agentscape</org.iids.aos.install.path>
+  </properties>
+</project>
