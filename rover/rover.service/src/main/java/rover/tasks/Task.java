@@ -8,7 +8,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import org.iids.aos.log.Log;
+
 
 public abstract class Task {
 

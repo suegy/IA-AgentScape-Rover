@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/rover/rover-agent.iml" filepath="$PROJECT_DIR$/rover/rover-agent.iml" />
+      <module fileurl="file://$PROJECT_DIR$/rover.monitor/rover-monitor.iml" filepath="$PROJECT_DIR$/rover.monitor/rover-monitor.iml" />
+      <module fileurl="file://$PROJECT_DIR$/rover.service/rover.service.iml" filepath="$PROJECT_DIR$/rover.service/rover.service.iml" />
+      <module fileurl="file://$PROJECT_DIR$/rover.shared/rover.shared.iml" filepath="$PROJECT_DIR$/rover.shared/rover.shared.iml" />
+    </modules>
+  </component>
+</project>
+

@@ -1,6 +1,7 @@
 package rover;
 
-import org.iids.aos.log.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TeamInfo {
 
@@ -11,9 +12,13 @@ public class TeamInfo {
 	private int roverCount;
 	
 	private int collectedCount;
-	
+
+    private Logger logger;
+
 	public TeamInfo(String name, double x, double y) {
-		teamName = name;
+        logger = LoggerFactory.getLogger(TeamInfo.class);
+
+        teamName = name;
 		baseX = x;
 		baseY = y;
 		roverCount = 0;
@@ -50,7 +55,7 @@ public class TeamInfo {
 
 	public void setCollectedCount(int collectedCount) {
 		this.collectedCount = collectedCount;
-		Log.console("Team " + teamName + ": " + collectedCount + " resources collected.");
+        logger.info("Team " + teamName + ": " + collectedCount + " resources collected.");
 	}
 
 	public int getRoverCount() {

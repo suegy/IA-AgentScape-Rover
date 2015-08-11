@@ -5,8 +5,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Random;
 
-import org.iids.aos.log.Log;
 import org.iids.aos.service.AbstractDefaultService;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import rover.ResourceInfo;
 import rover.RoverInfo;
@@ -24,7 +25,7 @@ public class RoverServiceImpl extends AbstractDefaultService implements
 	private HashMap<String, TeamInfo> teams;
 	private HashMap<String, RoverInfo> rovers;
 	private ArrayList<ResourceInfo> resources;
-	
+	private Logger logger;
 	//private ArrayList<RoverMonitor> monitors;
 	
 	private int width;
@@ -51,8 +52,9 @@ public class RoverServiceImpl extends AbstractDefaultService implements
 		isCompetitive = false;
 		
 		started = false;
-	
-		worldSpeed = 1;
+        logger = LoggerFactory.getLogger(RoverService.class);
+
+                worldSpeed = 1;
 		
 		//monitors = new ArrayList<RoverMonitor>();
 		
@@ -61,8 +63,7 @@ public class RoverServiceImpl extends AbstractDefaultService implements
 	
 	@Override
 	public void resetWorld(int scenario) {
-		Log.console("resetWorld: scenario " + scenario);
-		
+		logger.info("resetWorld: scenario " + scenario);
 		currentScenario = scenario;
 		
 		synchronized(this) {
@@ -174,7 +175,7 @@ public class RoverServiceImpl extends AbstractDefaultService implements
 	@Override
 	public void startWorld(int speed) {
 
-		Log.console("startWorld");
+		logger.info("startWorld");
 		this.worldSpeed = speed;
 		
 		worldThread = new Thread(new Runnable() {
@@ -267,7 +268,7 @@ public class RoverServiceImpl extends AbstractDefaultService implements
 		synchronized (this) {
 			started = false;
 			
-			Log.console("Stopping World!");
+			logger.info("Stopping World!");
 			
 			//inform agents the world has started
 			for(RoverInfo ri : rovers.values()) {
@@ -279,7 +280,7 @@ public class RoverServiceImpl extends AbstractDefaultService implements
 			
 
 			for(TeamInfo t : teams.values()) {
-				Log.console("Team " + t.getTeamName() + " collected " + t.getCollectedCount());
+                logger.info("Team " + t.getTeamName() + " collected " + t.getCollectedCount());
 			}
 			
 			worldThread = null;
@@ -292,8 +293,8 @@ public class RoverServiceImpl extends AbstractDefaultService implements
 	@Override
 	public String registerClient(String team)
 			throws Exception {
-		
-		Log.console("CON: " + this.getCurrentSession().getConnectionId());
+
+        logger.info("CON: " + this.getCurrentSession().getConnectionId());
 		
 		
 		if(started) {
@@ -316,7 +317,7 @@ public class RoverServiceImpl extends AbstractDefaultService implements
 				double y = rand.nextDouble() * height;
 				t = new TeamInfo(team, x, y);
 				teams.put(team, t);
-				Log.console("Created team: " + team + " (" + x + ", " + y + ")");
+                logger.info("Created team: " + team + " (" + x + ", " + y + ")");
 			}
 		
 			RoverInfo ri = new RoverInfo(this,t);
@@ -329,8 +330,8 @@ public class RoverServiceImpl extends AbstractDefaultService implements
 			ri.setClientKey(key);
 			
 			rovers.put(key, ri);
-			
-			Log.console("New client (" + team + "): " + key);
+
+            logger.info("New client (" + team + "): " + key);
 			
 			return key;			
 		}
@@ -432,7 +433,7 @@ public class RoverServiceImpl extends AbstractDefaultService implements
 	public void move(String client, double xOffset, double yOffset,
 			double speed) throws Exception {
 				
-		//Log.console("Move: " + client + " " + xOffset + " " + yOffset + " " + speed);
+		//logger.info("Move: " + client + " " + xOffset + " " + yOffset + " " + speed);
 		
 		synchronized(this) {
 			RoverInfo ri = rovers.get(client);		
@@ -511,8 +512,8 @@ public class RoverServiceImpl extends AbstractDefaultService implements
 			throw new Exception("speed + scanRange + maxLoad must not be > 9");
 		}
 		
-		synchronized(this) {		
-			Log.console("setAttributes for: " + client);
+		synchronized(this) {
+            logger.info("setAttributes for: " + client);
 			RoverInfo ri = rovers.get(client);
 			ri.setSpeed(speed);
 			ri.setScanRange(scanRange);

@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: org.acplt.oncrpc:oncrpc:1.0.6-mt">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/acplt/oncrpc/oncrpc/1.0.6-mt/oncrpc-1.0.6-mt.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/org/acplt/oncrpc/oncrpc/1.0.6-mt/oncrpc-1.0.6-mt-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/acplt/oncrpc/oncrpc/1.0.6-mt/oncrpc-1.0.6-mt-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

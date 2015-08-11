@@ -7,7 +7,6 @@ import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 
 import org.iids.aos.agent.Agent;
-import org.iids.aos.log.Log;
 import org.iids.aos.service.ServiceBroker;
 
 import rover.MonitorInfo.Resource;
@@ -47,53 +46,50 @@ public class MonitorAgent extends Agent  {
 		
 		sb = getServiceBroker();
 				
-		try {
-			service = sb.bind(RoverService.class);
-		
-		} catch (Exception e) {
-			e.printStackTrace();
-		
-			return;
-		}
-		
-		display = new RoverDisplay(sb);
-		
-		display.setVisible(true);
-		
-		Monitor();
+
+
+        //Runnable createDisplay = new Runnable() {
+          //  @Override
+          //  public void run() {
+
+                display = new RoverDisplay(sb);
+
+                display.setVisible(true);
+            //}
+        //};
+
+        //SwingUtilities.invokeLater(createDisplay);
+
+		runMonitor();
+
 		
 	}
 
 
 
 	
-	private void Monitor() {
-		thread = new Thread(new Runnable() {
-			
-			@Override
-			public void run() {
-				// TODO Auto-generated method stub
-				
-				while(true) {
-					
-					try {
-						service = sb.bind(RoverService.class);
-					} catch (Exception e1) {
-						e1.printStackTrace();
-					}
-					
-					final MonitorInfo m = service.getWorldInfo();
-					
-					Runnable updateRunnable = new Runnable() {						
-						@Override
-						public void run() {
+	private void runMonitor() {
 
-							display.UpdateDisplay(m);
-							
-						}
-					};
-					
-					SwingUtilities.invokeLater(updateRunnable);
+
+                Runnable updateDisplay = new Runnable() {
+                    @Override
+                    public void run() {
+                        display.UpdateDisplay(service.getWorldInfo());
+                    }
+                };
+
+				while(display.isVisible()) {
+
+                    try {
+                        service = sb.bind(RoverService.class);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+
+                        return;
+                    }
+
+                    SwingUtilities.invokeLater(updateDisplay);
 					
 					/*
 					
@@ -126,9 +122,8 @@ public class MonitorAgent extends Agent  {
 					}
 				}
 				
-			}
-		});
-		thread.start();
+
+
 	}
 	
 

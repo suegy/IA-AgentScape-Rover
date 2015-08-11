@@ -7,17 +7,18 @@
   <parent>
     <groupId>org.iids.aos</groupId>
     <artifactId>agentscape</artifactId>
-    <version>2.0-m2</version>
+    <version>2.0.0</version>
   </parent>
   <properties>
     <org.iids.aos.install.type>agent</org.iids.aos.install.type>
-    <org.iids.aos.install.path>/home/felix/agentscape</org.iids.aos.install.path>
+    <org.iids.aos.install.path>$AGENTSCAPE_HOME/2.0.0</org.iids.aos.install.path>
+    <as.dir>${user.home}/Documents/projects/agentscape</as.dir>
   <!-- optional -->
   </properties>
   <repositories>
    <repository>
       <id>agentscape-public</id>
-      <url>http://repo.agentscape.org/repo</url>
+      <url>http://nexus.agentscape.org/content/groups/public-agentscape/</url>
     </repository>    
     
     <!-- 
@@ -32,7 +33,7 @@
     <dependency>
       <groupId>org.iids.aos</groupId>
       <artifactId>agentscape-core</artifactId>
-      <version>2.0-m2</version>
+      <version>2.0.0</version>
       <scope>provided</scope>
     </dependency>   
      <dependency>

@@ -2,16 +2,15 @@ package rover;
 
 import java.util.Random;
 
-import org.iids.aos.log.Log;
 
 
 public class TestRover extends Rover {
 
 	public TestRover() {
-		Log.console("TestRover start");
-		
+        super();
+
 		//use your username for team name
-		setTeam("tristan");
+		setTeam("template");
 		
 		try {
 			//set attributes for this rover
@@ -27,7 +26,7 @@ public class TestRover extends Rover {
 	@Override
 	void begin() {
 		//called when the world is started
-		Log.console("BEGIN!");
+        getLog().info("BEGIN!");
 		
 		try {
 			//move somewhere initially
@@ -42,28 +41,28 @@ public class TestRover extends Rover {
 	void end() {
 		// called when the world is stopped
 		// the agent is killed after this
-		Log.console("END!");
+        getLog().info("END!");
 	}
 
 	@Override
 	void poll(PollResult pr) {
 		// This is called when one of the actions has completed
 
-		Log.console("Remaining Power: " + getEnergy());
+        getLog().info("Remaining Power: " + getEnergy());
 		
 		if(pr.getResultStatus() == PollResult.FAILED) {
-			Log.console("Ran out of power...");
+            getLog().info("Ran out of power...");
 			return;
 		}
 		
 		switch(pr.getResultType()) {
 		case PollResult.MOVE:
 			//move finished
-			Log.console("Move complete.");			
+            getLog().info("Move complete.");
 			
 			//now scan
 			try {
-				Log.console("Scanning...");
+                getLog().info("Scanning...");
 				scan(4);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -71,33 +70,33 @@ public class TestRover extends Rover {
 			
 			break;
 		case PollResult.SCAN:
-			Log.console("Scan complete");
+            getLog().info("Scan complete");
 						
 			for(ScanItem item : pr.getScanItems()) {
 				if(item.getItemType() == ScanItem.RESOURCE) {
-					Log.console("Resource found at: " + item.getxOffset() + ", " + item.getyOffset());					
+                    getLog().info("Resource found at: " + item.getxOffset() + ", " + item.getyOffset());
 				} else if(item.getItemType() == ScanItem.BASE) {
-					Log.console("Base found at: " + item.getxOffset() + ", " + item.getyOffset());
+                    getLog().info("Base found at: " + item.getxOffset() + ", " + item.getyOffset());
 				} else {
-					Log.console("Rover found at: " + item.getxOffset() + ", " + item.getyOffset());
+                    getLog().info("Rover found at: " + item.getxOffset() + ", " + item.getyOffset());
 				}
 			}
 			
 			// now move again
 			Random rand = new Random();
 			try {
-				Log.console("Moving...");
+                getLog().info("Moving...");
 				move(5 * rand.nextDouble(), 5 * rand.nextDouble(), 4);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 			break;
 		case PollResult.COLLECT:
-			Log.console("Collect complete.");
+            getLog().info("Collect complete.");
 			
 			break;
 		case PollResult.DEPOSIT:
-			Log.console("Deposit complete.");
+            getLog().info("Deposit complete.");
 			break;
 		}
 		
