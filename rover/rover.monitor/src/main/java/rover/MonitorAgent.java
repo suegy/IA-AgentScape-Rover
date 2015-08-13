@@ -1,9 +1,5 @@
 package rover;
 
-import javax.management.monitor.MonitorMBean;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 
 import org.iids.aos.agent.Agent;
@@ -23,15 +19,13 @@ public class MonitorAgent extends Agent  {
 	
 	private ServiceBroker sb;
 	private Thread thread;
-	
 	private RoverDisplay display;
 	
 	public MonitorAgent() {
 		service = null;
 		sb = null;
 		thread = null;
-		
-		display = null;
+        display = null;
 		
 		//preload cause of agentscape bug;
 		MonitorInfo mi = new MonitorInfo(0, 0);
@@ -75,6 +69,7 @@ public class MonitorAgent extends Agent  {
                     @Override
                     public void run() {
                         display.UpdateDisplay(service.getWorldInfo());
+
                     }
                 };
 

@@ -26,6 +26,7 @@ public class RoverServiceImpl extends AbstractDefaultService implements
 	private HashMap<String, RoverInfo> rovers;
 	private ArrayList<ResourceInfo> resources;
 	private Logger logger;
+    private RoverStats stats;
 	//private ArrayList<RoverMonitor> monitors;
 	
 	private int width;
@@ -53,10 +54,10 @@ public class RoverServiceImpl extends AbstractDefaultService implements
 		
 		started = false;
         logger = LoggerFactory.getLogger(RoverService.class);
-
-                worldSpeed = 1;
+        stats = new RoverStats();
+        worldSpeed = 1;
 		
-		//monitors = new ArrayList<RoverMonitor>();
+
 		
 		resetWorld(0);
 	}
@@ -251,7 +252,7 @@ public class RoverServiceImpl extends AbstractDefaultService implements
 		
 			started = true;
 			worldThread.start();
-				
+			stats.worldStarted();
 			//inform agents the world has started
 			for(RoverInfo ri : rovers.values()) {
 				
@@ -280,9 +281,10 @@ public class RoverServiceImpl extends AbstractDefaultService implements
 			
 
 			for(TeamInfo t : teams.values()) {
-                logger.info("Team " + t.getTeamName() + " collected " + t.getCollectedCount());
+                logger.info("Team " + t.getTeamName() + " collected " + t.getCollectedCount() );
+                stats.teamFinishedWorld(t);
 			}
-			
+			stats.worldStopped();
 			worldThread = null;
 			resetWorld(currentScenario);
 		}

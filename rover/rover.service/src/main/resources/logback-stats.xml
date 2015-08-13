@@ -1,0 +1,187 @@
+<!--<configuration debug="true">-->
+<configuration>
+	
+	<!-- Logging configuration for agentscape. Separates logging stuff for
+		 agents, services and middleware. Requires the ASLOC and ASHOST system
+		 properties to be set (these will be set by boot/app/config executors)
+		 but this will be more difficult when running from the classpath..
+	-->
+
+	<appender name="AGENT" class="ch.qos.logback.classic.sift.SiftingAppender">
+		
+		<!-- sets the logging threshold -->
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>INFO</level>
+		</filter>
+		
+		<!-- filters only threads that have type="agent" in the MDC -->
+		<filter class="ch.qos.logback.core.filter.EvaluatorFilter">    
+			<evaluator>
+				<expression> <!-- janino (java based) expression -->
+					return "agent".equals(mdc.get("type"));
+				</expression>
+			</evaluator>
+			<OnMismatch>DENY</OnMismatch>
+			<OnMatch>NEUTRAL</OnMatch>			
+		</filter>
+		
+		<!-- filter agent log files based on the agent names -->
+		<discriminator>
+			<key>name</key>
+			<defaultValue>unknown</defaultValue>
+		</discriminator>
+		
+		<!-- use a single file appender for each agent -->
+		<sift>
+			<appender name="AGENT-${name}" class="ch.qos.logback.core.FileAppender">
+				<file>log/${ASLOC}/${ASHOST}/agent/${name}.log</file>
+				<append>true</append>
+				<encoder>
+					<pattern>[%level] %date{HH:mm} %mdc{name} - %msg%n</pattern>
+				</encoder>			
+			</appender>
+		</sift>
+	</appender>
+
+    <appender name="STATS" class="ch.qos.logback.classic.sift.SiftingAppender">
+
+        <!-- sets the logging threshold -->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
+
+        <!-- filters only threads that have type="agent" in the MDC -->
+	<filter class="ch.qos.logback.core.filter.EvaluatorFilter">    
+			<evaluator>
+				<expression> <!-- janino (java based) expression -->
+					return "STATS".equals(logger);
+				</expression>
+			</evaluator>
+			<OnMismatch>DENY</OnMismatch>
+			<OnMatch>NEUTRAL</OnMatch>			
+	</filter>
+        <!-- filter agent log files based on the agent names -->
+        <discriminator>
+            <key>name</key>
+            <defaultValue>stats</defaultValue>
+        </discriminator>
+
+        <!-- use a single file appender for each agent -->
+        <sift>
+            <appender name="STAT-${name}" class="ch.qos.logback.core.FileAppender">
+                <file>log/${ASLOC}/${ASHOST}/stats/${name}.log</file>
+                <append>true</append>
+                <encoder>
+                    <pattern>[%level] %date{HH:mm} %mdc{name} - %msg%n</pattern>
+                </encoder>
+            </appender>
+        </sift>
+    </appender>
+
+	<appender name="SERVICE" class="ch.qos.logback.classic.sift.SiftingAppender">
+		
+		<!-- sets the logging threshold -->
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>INFO</level>
+		</filter>
+				
+		<!-- filters only threads that have type="service" in the MDC -->
+		<filter class="ch.qos.logback.core.filter.EvaluatorFilter">    
+			<evaluator>
+				<expression> <!-- janino (java based) expression -->
+					return "service".equals(mdc.get("type"));
+				</expression>
+			</evaluator>
+			<OnMismatch>DENY</OnMismatch>
+			<OnMatch>NEUTRAL</OnMatch>			
+		</filter>
+		
+		<!-- filter agent log files based on the agent names -->
+		<discriminator>
+			<key>name</key>
+			<defaultValue>unknown</defaultValue>
+		</discriminator>
+		
+		<!-- use a single file appender for each agent -->
+		<sift>
+			<appender name="SERVICE-${name}" class="ch.qos.logback.core.FileAppender">
+				<file>log/${ASLOC}/${ASHOST}/service/${name}.log</file>
+				<append>true</append>
+				<encoder>
+					<pattern>[%level] %date{HH:mm} %mdc{name} - %msg%n</pattern>
+				</encoder>			
+			</appender>
+		</sift>
+	</appender>
+	
+	<!-- rest of the stuff goes to the middleware log file -->
+	
+	<appender name="SYSTEM" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		
+		<!-- sets the logging threshold -->
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>INFO</level>
+		</filter>
+		
+		<!-- filter out the agent/service stuff? -->
+		<filter class="ch.qos.logback.core.filter.EvaluatorFilter">    
+			<evaluator>
+				<expression>
+					return "service".equals(mdc.get("type")) || "agent".equals(mdc.get("type"));
+				</expression>
+			</evaluator>
+			<OnMismatch>NEUTRAL</OnMismatch>
+			<OnMatch>DENY</OnMatch>			
+		</filter>
+		
+		<!-- log all stuff to this file but do a rollover on day/size -->
+		<file>log/${ASLOC}/${ASHOST}/middleware.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<!-- rollover daily -->
+			<fileNamePattern>log/${ASLOC}/${ASHOST}/middleware-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+			<!-- or whenever the file size reaches 100MB -->
+			<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<maxFileSize>100MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+		</rollingPolicy>
+		<encoder>
+			<pattern>%level %date{HH:mm} %logger{35} - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<!-- default STDOUT logger, shows warnings and worse on the console -->	
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>WARN</level>
+		</filter>
+		<encoder>
+			<pattern>[%d{HH:mm:ss}] %level %logger{36} - %msg%n</pattern>
+		</encoder>
+	</appender>	
+	
+	<!-- console appender, for diagnostic messages -->
+	<appender name="STDOUT-CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>* %msg%n</pattern>
+		</encoder>
+	</appender>	
+	
+	<!-- console logger to STDOUT -->
+	<logger name="CONSOLE" level="INFO">
+		<appender-ref ref="STDOUT-CONSOLE"/>
+	</logger>
+
+	<!-- specify the root + level + appenders -->
+	<root level="INFO">
+		<!-- we put all the appenders in here and filter later. That way, the
+		logging output is not dependent on the used logger name. Otherwise
+		agents (and their libraries) have to use a specific logger name
+		otherwise their logging will not be displayed -->
+		<appender-ref ref="AGENT"/>
+		<appender-ref ref="SERVICE"/>
+		<appender-ref ref="STATS"/>
+		<appender-ref ref="SYSTEM"/>
+		<appender-ref ref="STDOUT"/>
+	</root>
+	
+</configuration>

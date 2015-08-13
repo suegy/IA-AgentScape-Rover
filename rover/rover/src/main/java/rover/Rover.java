@@ -125,6 +125,7 @@ public abstract class Rover extends Agent {
                 end();
 
                 try {
+
                     clientKey = service.registerClient(team);
                     //set our attributes with the service
                     service.setAttributes(clientKey, speed, scanRange, maxLoad);
