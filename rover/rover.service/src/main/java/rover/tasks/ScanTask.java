@@ -3,25 +3,18 @@ package rover.tasks;
 
 import java.util.ArrayList;
 
-import rover.PollResult;
-import rover.ResourceInfo;
-import rover.RoverInfo;
+import rover.*;
 import rover.RoverService;
-import rover.RoverServiceImpl;
-import rover.ScanItem;
-import rover.TeamInfo;
-
-
 
 
 public class ScanTask extends Task {
 
-	RoverServiceImpl impl;
+	RoverService impl;
 	double scanDist;
 	
 	private static final double scanMultiplier = 2.0;
 	
-	public ScanTask(RoverInfo rover, RoverServiceImpl impl, double scanDist) {
+	public ScanTask(RoverInfo rover, RoverService impl, double scanDist) {
 		super(rover, impl, 5000);
 		
 		setEnergyPerSecond(2 * (scanDist / rover.getScanRange()));
@@ -47,7 +40,7 @@ public class ScanTask extends Task {
 			
 			if(rsi.getCount() > 0) {			
 				if(impl.calcDistance(getRover().getX(), getRover().getY(), rsi.getX(), rsi.getY()) < scanDist * scanMultiplier) {
-					ScanItem  si = new ScanItem(ScanItem.RESOURCE,impl.calcXOffset(getRover().getX(), rsi.getX()), impl.calcYOffset(getRover().getY(), rsi.getY())) ;
+					ScanItem  si = new ScanItem(ScanItem.RESOURCE,impl.calcOffset(getRover().getX(), rsi.getX(),true), impl.calcOffset(getRover().getY(), rsi.getY(),false)) ;
 					items.add(si);
 				}			
 			}
@@ -57,7 +50,7 @@ public class ScanTask extends Task {
 		for(RoverInfo ri : impl.getRovers().values()) {
 			if(ri != getRover()) {
 				if(impl.calcDistance(getRover().getX(), getRover().getY(), ri.getX(), ri.getY()) < scanDist * scanMultiplier) {
-					ScanItem si = new ScanItem(ScanItem.ROVER, impl.calcXOffset(getRover().getX(), ri.getX()), impl.calcYOffset(getRover().getY(), ri.getY()));
+					ScanItem si = new ScanItem(ScanItem.ROVER, impl.calcOffset(getRover().getX(), ri.getX(),true), impl.calcOffset(getRover().getY(), ri.getY(),false));
 					items.add(si);
 				}
 			}
@@ -65,7 +58,7 @@ public class ScanTask extends Task {
 		
 		for(TeamInfo ti : impl.getTeams().values()) {
 			if(impl.calcDistance(getRover().getX(), getRover().getY(), ti.getBaseX(), ti.getBaseY()) < scanDist * scanMultiplier) {
-				ScanItem si = new ScanItem(ScanItem.BASE, impl.calcXOffset(getRover().getX(), ti.getBaseX()), impl.calcYOffset(getRover().getY(), ti.getBaseY()));
+				ScanItem si = new ScanItem(ScanItem.BASE, impl.calcOffset(getRover().getX(), ti.getBaseX(),true), impl.calcOffset(getRover().getY(), ti.getBaseY(),false));
 				items.add(si);
 			}
 		}

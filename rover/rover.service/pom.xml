@@ -51,8 +51,8 @@
             <addClasspath>true</addClasspath>
           </manifest>
           <manifestEntries>
-          	<Service-Class>rover.RoverServiceImpl</Service-Class>
-            <Service-Interface>rover.RoverService</Service-Interface> 
+          	<Service-Class>rover.RoverService</Service-Class>
+            <Service-Interface>rover.IRoverService</Service-Interface>
           </manifestEntries>
         </archive>
       </configuration>

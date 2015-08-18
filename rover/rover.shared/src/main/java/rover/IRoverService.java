@@ -4,7 +4,7 @@ import org.iids.aos.service.Service;
 import org.iids.aos.service.ServiceListener;
 
 
-public interface RoverService  extends Service {
+public interface IRoverService extends Service {
 	
 	/*
 	interface RoverClient extends ServiceListener {
@@ -27,10 +27,17 @@ public interface RoverService  extends Service {
 	boolean isWorldCompetitive();
 	
 	public int getScenario();
+
+    public Integer[] getScenarioIDs();
 	
 	void move(String clientKey, double xOffset, double yOffest, double speed) throws Exception;
 	void stop(String clientKey) throws Exception;
-	
+
+    void broadCastToTeam(String clientKey,String message);
+    void broadCastToUnit(String clientKey, String remoteUnit, String message);
+
+    String[] receiveMessages(String clientKey);
+
 	void scan(String clientKey, double range) throws Exception;
 
 	void collect(String clientKey) throws Exception;

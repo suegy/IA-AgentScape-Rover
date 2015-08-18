@@ -3,9 +3,9 @@ package rover.tasks;
 
 
 
+import rover.RoverService;
 import rover.PollResult;
 import rover.RoverInfo;
-import rover.RoverServiceImpl;
 
 
 public class MoveTask extends Task {
@@ -19,7 +19,7 @@ public class MoveTask extends Task {
 
 	private double speed;
 	
-	public MoveTask(RoverInfo rover, RoverServiceImpl impl, double xOffset, double yOffset, double speed) {
+	public MoveTask(RoverInfo rover, RoverService impl, double xOffset, double yOffset, double speed) {
 		//how much time will it take to get there
 		
 		super( rover, impl, (int) (( Math.sqrt(Math.pow(xOffset, 2) + Math.pow(yOffset, 2)) / speed) * 1000) );

@@ -1,18 +1,15 @@
 package rover.tasks;
 
 
-import rover.PollResult;
-import rover.ResourceInfo;
-import rover.RoverInfo;
-import rover.RoverServiceImpl;
-import rover.TeamInfo;
+import rover.*;
+import rover.RoverService;
 
 public class DepositTask extends Task {
 
 	private ResourceInfo ri;
 	private TeamInfo ti;
 	
-	public DepositTask(RoverInfo rover, RoverServiceImpl impl, ResourceInfo ri, TeamInfo ti) {
+	public DepositTask(RoverInfo rover, RoverService impl, ResourceInfo ri, TeamInfo ti) {
 		super(rover, impl, 5000);
 		
 		setEnergyPerSecond(1);

@@ -1,6 +1,7 @@
-package rover.tasks;
+package rover;
 
 import org.simpleframework.xml.Attribute;
+import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;
 
 import java.io.Serializable;
@@ -10,22 +11,33 @@ import java.io.Serializable;
  */
 @Root
 public class Scenario {
-    @Attribute
+    @Element(name="width")
     private int width = 0;
-    @Attribute
+    @Element(name="height")
     private int height = 0;
 
-    @Attribute
+    @Element(name="resources")
     private int rscount = 0;
-    @Attribute
+
+    @Element(name ="resourceDistribution")
     private int rsDist = 0;
 
-    @Attribute
+    @Attribute(name="id")
+    private int id = 0;
+
+    @Element(name="energy")
     private int initialEnergy = 0;
-    @Attribute
+
+    @Element(name="isCompetitive")
     private boolean isCompetitive = false;
 
-    public Scenario(int width, int height, int resources, int resourceDist, int energy, boolean competitive) {
+    public static Scenario Empty(){
+        return new Scenario(0,0,0,0,0,200,false);
+    }
+
+    public Scenario(@Attribute(name="id") int id,@Element(name="width") int width,@Element(name="height") int height,
+                    @Element(name="resources") int resources,@Element(name="resourceDistribution") int resourceDist, @Element(name="energy") int energy,@Element(name="isCompetitive") boolean competitive) {
+        this.id = id;
         this.width = width;
         this.height = height;
         this.rscount  =resources;
@@ -51,5 +63,9 @@ public class Scenario {
     }
     public boolean isCompetitive(){
         return isCompetitive;
+    }
+
+    public int getId() {
+        return id;
     }
 }

@@ -1,59 +1,52 @@
 package rover;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Random;
+import java.util.*;
 
 import org.iids.aos.service.AbstractDefaultService;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
-import rover.ResourceInfo;
-import rover.RoverInfo;
-import rover.RoverService;
-import rover.TeamInfo;
 import rover.tasks.CollectTask;
 import rover.tasks.DepositTask;
 import rover.tasks.MoveTask;
 import rover.tasks.ScanTask;
 import rover.tasks.Task;
 
-public class RoverServiceImpl extends AbstractDefaultService implements
-		RoverService {
+public class RoverService extends AbstractDefaultService implements
+        IRoverService {
 
-	private HashMap<String, TeamInfo> teams;
-	private HashMap<String, RoverInfo> rovers;
+	private Map<String, TeamInfo> teams;
+    private Map<Integer, Scenario> availableScenarios;
+	private Map<String, RoverInfo> rovers;
 	private ArrayList<ResourceInfo> resources;
 	private Logger logger;
     private RoverStats stats;
 	//private ArrayList<RoverMonitor> monitors;
-	
-	private int width;
-	private int height;
-	
+
+    private Scenario selectedScenario;
+    private ScenarioFactory scenarioFactory;
+    private Map<String,String> messages;
 	private int totalResources;
-	private boolean isCompetitive;
-	
-	private int initialEnergy;
-	
+
 	private boolean started;
-	private int currentScenario;
+	private int currentScenarioID;
 	
 	private Thread worldThread;
 	
 	private int worldSpeed;
 	
-	public RoverServiceImpl() {
-		width = 0;
-		height = 0;
-		
-		initialEnergy = 200;
+	public RoverService() {
+
+		selectedScenario = Scenario.Empty();
+        scenarioFactory = new ScenarioFactory();
+        availableScenarios = scenarioFactory.deSerializeScenarios("scenarios");
 		totalResources = 0;
-		isCompetitive = false;
-		
+        teams = new HashMap<String, TeamInfo>();
+        rovers = new HashMap<String, RoverInfo>();
+        resources = new ArrayList<ResourceInfo>();
+
 		started = false;
-        logger = LoggerFactory.getLogger(RoverService.class);
+        logger = LoggerFactory.getLogger(IRoverService.class);
         stats = new RoverStats();
         worldSpeed = 1;
 		
@@ -65,112 +58,45 @@ public class RoverServiceImpl extends AbstractDefaultService implements
 	@Override
 	public void resetWorld(int scenario) {
 		logger.info("resetWorld: scenario " + scenario);
-		currentScenario = scenario;
-		
+		currentScenarioID = scenario;
+		if (availableScenarios.containsKey(scenario))
+            selectedScenario = availableScenarios.get(scenario);
+        else
+            selectedScenario = Scenario.Empty();
+
 		synchronized(this) {
 			started = false;			
-		}
+
 		
-		teams = new HashMap<String, TeamInfo>();
-		rovers = new HashMap<String, RoverInfo>();
-		resources = new ArrayList<ResourceInfo>();
-		
-		width = 50;
-		height = 50;		
-		
-		totalResources = 0;
-		
-		int rscount = 0;
-		int rsDist = 0;
-		
-		switch(scenario) {
-		case 0:
-			
-			width = 20;
-			height = 20;
-			
-			rscount = 1;
-			rsDist = 10;
-			
-			initialEnergy = 5000;
-			isCompetitive = false;
-			
-			break;
-			
-		case 1:	
-			
-			width = 40;
-			height = 40;
-			
-			rscount = 5;
-			rsDist = 5;
-			
-			initialEnergy = 5000;
-			isCompetitive = false;
-			
-			break;
-		
-		case 2:
-			
-			width = 80;
-			height = 80;
-			
-			rscount = 10;
-			rsDist = 5;
-			
-			initialEnergy = 1000;
-			isCompetitive = false;
-			
-			break;
-			
-		case 3:
-			
-			width = 100;
-			height = 100;
-			
-			rscount = 10;
-			rsDist = 1;
-			
-			initialEnergy = 1000;
-			isCompetitive = false;
-			
-			break;
-			
-		case 4:
-			
-			width = 200;
-			height = 200;
-			
-			rscount = 15;
-			rsDist = 1;
-			
-			initialEnergy = 500;
-			isCompetitive = false;
-			
-			break;
-			
-		case 5:
-			
-			width = 500;
-			height = 500;
-			
-			rscount = 30;
-			rsDist = 2;
-			
-			initialEnergy = 1000;
-			isCompetitive = true;
-			
-			break;
-			
-		}
-		
-	
+
+
+
+
+        //inform agents the world has started
+        if (rovers.size() > 0){
+
+            RoverInfo [] old = rovers.values().toArray(new RoverInfo[0]);
+
+            teams = new HashMap<String, TeamInfo>();
+            rovers = new HashMap<String, RoverInfo>();
+            System.out.println("rovers: "+rovers.size()+  ": "+old.length);
+
+            for(RoverInfo ri : old) {
+
+                PollResult pr = new PollResult(PollResult.WORLD_STOPPED, PollResult.COMPLETE);
+                ri.setPollResult(pr);
+
+            }
+        }
+        }
+        resources = new ArrayList<ResourceInfo>();
 		Random rand = new Random();
 		
-		for(int i = 0; i < rscount; i++) {
-			resources.add(new ResourceInfo(rand.nextDouble() * width, rand.nextDouble() * height, rsDist));
-			totalResources += rsDist;
+		for(int i = 0; i < selectedScenario.getResourceCount(); i++) {
+			resources.add(new ResourceInfo(rand.nextDouble() * selectedScenario.getWidth(), rand.nextDouble() * selectedScenario.getHeight(), selectedScenario.getResourceDistribution()));
+			totalResources += selectedScenario.getResourceDistribution();
 		}
+
 	}
 	
 	@Override
@@ -286,7 +212,6 @@ public class RoverServiceImpl extends AbstractDefaultService implements
 			}
 			stats.worldStopped();
 			worldThread = null;
-			resetWorld(currentScenario);
 		}
 	}
 	
@@ -315,15 +240,15 @@ public class RoverServiceImpl extends AbstractDefaultService implements
 			} else {
 				//create new team info with random base location
 							
-				double x = rand.nextDouble() * width;
-				double y = rand.nextDouble() * height;
+				double x = rand.nextDouble() * selectedScenario.getWidth();
+				double y = rand.nextDouble() * selectedScenario.getHeight();
 				t = new TeamInfo(team, x, y);
 				teams.put(team, t);
                 logger.info("Created team: " + team + " (" + x + ", " + y + ")");
 			}
 		
 			RoverInfo ri = new RoverInfo(this,t);
-			ri.setEnergy(initialEnergy);
+			ri.setEnergy(selectedScenario.getEnergy());
 			
 			
 			String key = team + "-" + t.getRoverCount();
@@ -562,7 +487,46 @@ public class RoverServiceImpl extends AbstractDefaultService implements
 		
 	}
 
-	@Override
+    @Override
+    public void broadCastToTeam(String client, String message) {
+        synchronized(this) {
+            RoverInfo ri = rovers.get(client);
+
+            //FIXME:clunky code because team has no link back to team mates
+            for (RoverInfo rover : rovers.values())
+                if ( (ri.getTeam()==rover.getTeam()) && (ri.getClientKey()) != rover.getClientKey())
+                    rover.receiveMessage(message);
+
+
+        }
+
+    }
+
+    @Override
+    public String[] receiveMessages(String client){
+        synchronized(this) {
+            RoverInfo ri = rovers.get(client);
+
+            return ri.retrieveMessages();
+        }
+    }
+
+    @Override
+    public void broadCastToUnit(String client, String remoteUnit, String message) {
+            synchronized(this) {
+                RoverInfo ri = rovers.get(client);
+
+                //FIXME:clunky code because team has no link back to team mates
+                for (RoverInfo rover : rovers.values())
+                // a rover is only allowed to send messages to its team mates
+                    if ( (ri.getTeam()==rover.getTeam()) && (remoteUnit == rover.getClientKey()))
+                        rover.receiveMessage(message);
+
+
+            }
+    }
+
+    @Override
 	public PollResult Poll(String clientKey) throws Exception {
 		
 		synchronized(this) {
@@ -590,68 +554,62 @@ public class RoverServiceImpl extends AbstractDefaultService implements
 			return ri.getEnergy();
 		}
 	}
+
+    /**
+     * calculates the distance between two points in world coordinates
+     * @param x1 x coordinate of the first point
+     * @param x2 y coordinate of the first point
+     * @param y1 x coordinate of the second point
+     * @param y2 y coordinate of the second point
+     * @return
+     */
+	public double calcDistance(double x1, double x2, double y1, double y2) {
 	
-	public double calcDistance(double x1, double y1, double x2, double y2) {
-	
-		double xdist = calcXOffset(x1, x2);
-		double ydist = calcYOffset(y1, y2);
+		double xdist = calcOffset(x1, x2, true);
+		double ydist = calcOffset(y1, y2, false);
 			
 		double dist = Math.sqrt(xdist * xdist + ydist* ydist);
 		
 		return dist;
 	}
-	
-	public double calcXOffset(double xOrig, double x) {
+
+
+	public double calcOffset(double orig, double pos, boolean horizontal) {
 		
-		double diff = x-xOrig;
+		double diff = pos-orig;
+        double dimension =  horizontal ? selectedScenario.getWidth() : selectedScenario.getHeight();
+
 	
-		double half = width / 2.0;
+		double half = dimension / 2.0;
 		
 		if(diff > 0) {
 			if(diff > half) {
-				diff = -(width-diff);
+				diff = -(dimension-diff);
 			}
 		} else {
 			if(diff < -half) {
-				diff = width+diff;
+				diff = dimension+diff;
 			} 
 		}
 		
 		return diff;
-		
-	}
+    }
 	
-	public double calcYOffset(double yOrig, double y) {
-		double diff = y-yOrig;
-		
-		double half = height / 2.0;
-		
-		if(diff > 0) {
-			if(diff > half) {
-				diff = -(height-diff);
-			}
-		} else {
-			if(diff < -half) {
-				diff = height+diff;
-			} 
-		}
-		
-		return diff;
-	}
 	
-	public HashMap<String, TeamInfo> getTeams() {
+	
+	public Map<String, TeamInfo> getTeams() {
 		return teams;
 	}
 
-	public void setTeams(HashMap<String, TeamInfo> teams) {
+	public void setTeams(Map<String, TeamInfo> teams) {
 		this.teams = teams;
 	}
 
-	public HashMap<String, RoverInfo> getRovers() {
+	public Map<String, RoverInfo> getRovers() {
 		return rovers;
 	}
 
-	public void setRovers(HashMap<String, RoverInfo> rovers) {
+	public void setRovers(Map<String, RoverInfo> rovers) {
 		this.rovers = rovers;
 	}
 
@@ -664,25 +622,25 @@ public class RoverServiceImpl extends AbstractDefaultService implements
 	}
 
 	public int getWidth() {
-		return width;
-	}
-
-	public void setWidth(int width) {
-		this.width = width;
+		return selectedScenario.getWidth();
 	}
 
 	public int getHeight() {
-		return height;
+		return selectedScenario.getHeight();
 	}
 
+	/*
+	public void setWidth(int width) {
+		this.width = width;
+	}
 	public void setHeight(int height) {
 		this.height = height;
-	}
+	}*/
 
 	@Override
 	public MonitorInfo getWorldInfo() {
 		
-		MonitorInfo m = new MonitorInfo(width, height);
+		MonitorInfo m = new MonitorInfo(selectedScenario.getWidth(), selectedScenario.getHeight());
 		
 		synchronized (this) {
 			
@@ -724,7 +682,7 @@ public class RoverServiceImpl extends AbstractDefaultService implements
 
 	@Override
 	public int getWorldHeight() {
-		return height;
+		return selectedScenario.getHeight();
 	}
 
 	@Override
@@ -734,21 +692,31 @@ public class RoverServiceImpl extends AbstractDefaultService implements
 
 	@Override
 	public int getWorldWidth() {
-		return width;
+		return selectedScenario.getWidth();
 	}
 
 	@Override
 	public boolean isWorldCompetitive() {
-		return isCompetitive;
+		return selectedScenario.isCompetitive();
 	}
 
 
 	@Override
 	public int getScenario() {
-		return currentScenario;
+		return currentScenarioID;
 	}
 
-	public int getWorldSpeed() {
+    /**
+     * Returns the Scenarios IDS from all available scenarios in rover.services
+     * @return
+     */
+    @Override
+    public Integer[] getScenarioIDs() {
+
+        return availableScenarios.keySet().toArray(new Integer[0]);
+    }
+
+    public int getWorldSpeed() {
 		return worldSpeed;
 	}
 

@@ -65,7 +65,7 @@
       <configuration>
         <archive>
           <manifest>
-            <mainClass>rover.TestRover</mainClass>
+            <mainClass>rover.TemplateRover</mainClass>
             <addClasspath>true</addClasspath>
           </manifest>
         </archive>

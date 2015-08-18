@@ -3,13 +3,16 @@ package rover;
 
 import rover.tasks.Task;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class RoverInfo {
 
 	//the roverclient for callbacks
 	//private RoverClient client;
 	
 	private String clientKey;
-	
+	private Set<String> messages;
 	//rover's team
 	private TeamInfo team;
 	
@@ -29,12 +32,12 @@ public class RoverInfo {
 	
 	private PollResult pollResult;
 	
-	private RoverServiceImpl impl;
+	private RoverService impl;
 	
-	public RoverInfo(RoverServiceImpl impl, TeamInfo team) {
+	public RoverInfo(RoverService impl, TeamInfo team) {
 		this.team = team;
 		this.impl = impl;
-		
+		this.messages = new HashSet<String>();
 		this.x = team.getBaseX();
 		this.y = team.getBaseY();
 		
@@ -149,7 +152,18 @@ public class RoverInfo {
 	public void setCurrentLoad(int currentLoad) {
 		this.currentLoad = currentLoad;
 	}
-	
 
-	
+
+    public void receiveMessage(String message) {
+        messages.add(message);
+    }
+
+    public String[] retrieveMessages() {
+        String[] result;
+        synchronized (messages){
+            result = messages.toArray(new String[0]);
+            messages.clear();
+        }
+        return result;
+    }
 }

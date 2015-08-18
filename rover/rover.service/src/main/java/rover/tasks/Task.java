@@ -2,7 +2,7 @@ package rover.tasks;
 
 
 import rover.RoverInfo;
-import rover.RoverServiceImpl;
+import rover.RoverService;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -18,11 +18,11 @@ public abstract class Task {
 	private Date lastUpdateTime;
 	
 	private RoverInfo rover;
-	private RoverServiceImpl impl;
+	private RoverService impl;
 	
 	private double energyPerSecond;
 	
-	public Task(RoverInfo rover, RoverServiceImpl impl, int ms) {
+	public Task(RoverInfo rover, RoverService impl, int ms) {
 		
 		this.rover = rover;
 		this.impl = impl;

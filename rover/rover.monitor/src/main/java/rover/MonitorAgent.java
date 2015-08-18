@@ -15,7 +15,7 @@ public class MonitorAgent extends Agent  {
 	
 	private static final long serialVersionUID = 1L;
 
-	private RoverService service;
+	private IRoverService service;
 	
 	private ServiceBroker sb;
 	private Thread thread;
@@ -76,7 +76,7 @@ public class MonitorAgent extends Agent  {
 				while(display.isVisible()) {
 
                     try {
-                        service = sb.bind(RoverService.class);
+                        service = sb.bind(IRoverService.class);
 
                     } catch (Exception e) {
                         e.printStackTrace();

@@ -1,16 +1,16 @@
 package rover.tasks;
 
 
+import rover.RoverService;
 import rover.PollResult;
 import rover.ResourceInfo;
 import rover.RoverInfo;
-import rover.RoverServiceImpl;
 
 public class CollectTask extends Task {
 
 	private ResourceInfo ri;
 	
-	public CollectTask(RoverInfo rover, RoverServiceImpl impl, ResourceInfo ri) {
+	public CollectTask(RoverInfo rover, RoverService impl, ResourceInfo ri) {
 		super(rover, impl, 5000);
 		
 		this.ri = ri;

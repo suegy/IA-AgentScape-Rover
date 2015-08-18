@@ -1,10 +1,10 @@
 package rover;
 
 import org.iids.aos.service.ServiceBroker;
+import org.iids.aos.service.ServiceException;
 import rover.MonitorInfo.Rover;
 
 import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -27,15 +27,19 @@ public class RoverDisplay extends JFrame implements ActionListener {
 	private JTable roverTable;
 	private RoverTableModel roverTableModel;
 	
-	private RoverService service;	
+	private IRoverService service;
 	private ServiceBroker sb;
 
 	public RoverDisplay(ServiceBroker sb) {
 		super("Rover Monitor");
 
 		this.sb = sb;
-		
-		BorderLayout bl = new BorderLayout();
+        try {
+            service = sb.bind(IRoverService.class);
+        } catch (ServiceException e) {
+            e.printStackTrace();
+        }
+        BorderLayout bl = new BorderLayout();
 		this.setLayout(bl);
 		
 		drawPanel = new WorldPanel();
@@ -59,7 +63,12 @@ public class RoverDisplay extends JFrame implements ActionListener {
 		btnStop.setEnabled(false);
 		
 		//create list to select scenario
-		String[] scenarios = {"Scenario 0", "Scenario 1", "Scenario 2", "Scenario 3", "Scenario 4", "Scenario 5"};
+        Integer[] scenarioKeys = (service != null) ? service.getScenarioIDs() : new Integer[0];
+
+		String[] scenarios = new String[scenarioKeys.length];
+        for (int i =0;i<scenarioKeys.length;i++)
+            scenarios[i] = "Scenario "+scenarioKeys[i].intValue();
+
 		scenarioList = new JComboBox(scenarios);
 
 		String[] zooms = { "Zoom 10", "Zoom 9", "Zoom 8", "Zoom 7", "Zoom 6", "Zoom 5", "Zoom 4", "Zoom 3", "Zoom 2", "Zoom 1" };
@@ -114,7 +123,7 @@ public class RoverDisplay extends JFrame implements ActionListener {
 			btnStop.setEnabled(true);
 			
 			try {
-				service = sb.bind(RoverService.class);			
+				//service = sb.bind(IRoverService.class);
 				service.startWorld(speedList.getSelectedIndex() + 1);
 			} catch (Exception ex) {
 				ex.printStackTrace();				
@@ -131,8 +140,9 @@ public class RoverDisplay extends JFrame implements ActionListener {
 			btnStop.setEnabled(false);
 			
 			try {
-				service = sb.bind(RoverService.class);			
+				//service = sb.bind(IRoverService.class);
 				service.stopWorld();
+                service.resetWorld(service.getScenario());
 			} catch (Exception ex) {
 				ex.printStackTrace();				
 			}
@@ -140,8 +150,9 @@ public class RoverDisplay extends JFrame implements ActionListener {
 		} else if(e.getActionCommand().equals("Select")) {
 			
 			try {
-				service = sb.bind(RoverService.class);			
-				service.resetWorld( scenarioList.getSelectedIndex() );
+				//service = sb.bind(IRoverService.class);
+                String value = (String)scenarioList.getSelectedItem();
+                service.resetWorld(Integer.parseInt(value.split(" ")[1]));
 			} catch (Exception ex) {
 				ex.printStackTrace();				
 			}

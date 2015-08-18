@@ -4,9 +4,9 @@ import java.util.Random;
 
 
 
-public class TestRover extends Rover {
+public class TemplateRover extends Rover {
 
-	public TestRover() {
+	public TemplateRover() {
         super();
 
 		//use your username for team name

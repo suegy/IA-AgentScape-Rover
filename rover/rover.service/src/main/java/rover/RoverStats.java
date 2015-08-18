@@ -1,7 +1,5 @@
 package rover;
 
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.core.util.StatusPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,10 +13,6 @@ public class RoverStats {
 
     public RoverStats(){
         logger = LoggerFactory.getLogger("STATS");
-        LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-        // print logback's internal status
-        StatusPrinter.print(lc);
-
     }
 
     /**
@@ -34,5 +28,9 @@ public class RoverStats {
 
     public void worldStarted(){
         logger.info("world started");
+    }
+
+    public void worldReset() {
+        logger.info("world reset");
     }
 }

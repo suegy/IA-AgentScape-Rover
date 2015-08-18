@@ -1,26 +1,21 @@
 package rover;
 
-import java.io.Serializable;
-
 import org.iids.aos.agent.Agent;
-import org.iids.aos.exception.AgentScapeException;
-import org.iids.aos.exception.AgentUnknownException;
-import org.iids.aos.io.AosOutputStream;
-import org.iids.aos.io.AosSocket;
-
-
 import org.iids.aos.service.ServiceBroker;
 
+import java.util.HashSet;
+import java.util.Set;
 
-import rover.RoverService;
-
-
+/**
+ * Base class for all rovers.
+ * This class is not to be modified as it contains the underlying logic across all rovers.
+ */
 public abstract class Rover extends Agent {
 
 
     private static final long serialVersionUID = 1L;
 
-    private RoverService service;
+    private IRoverService service;
     private String team;
 
     private int speed;
@@ -30,6 +25,11 @@ public abstract class Rover extends Agent {
     private boolean started;
 
     private String clientKey;
+
+    /**
+     * the messages received from other agents using either broadcast or directed messages
+     */
+    protected Set<String> messages;
 
     private Thread pollThread;
 
@@ -44,7 +44,7 @@ public abstract class Rover extends Agent {
         super();
         service = null;
         team = null;
-
+        messages = new HashSet<String>();
         started = false;
 
         speed = 3;
@@ -73,7 +73,7 @@ public abstract class Rover extends Agent {
         //we need to bind before each invocation because
         //of a bug in agentscape.
         try {
-            service = sb.bind(RoverService.class);
+            service = sb.bind(IRoverService.class);
         } catch (Exception e1) {
             e1.printStackTrace();
         }
@@ -96,14 +96,21 @@ public abstract class Rover extends Agent {
                 //begin
                 begin();
             } else if (pr.getResultType() == PollResult.WORLD_STOPPED) {
-                //world reset before it even started
-                    getLog().info("Stopping agent " + clientKey);
-                    end();
-                    run = false;
-
+                // world reset after switching scenarios
+                getLog().info("Stopping inActive agent " + clientKey);
+                end();
+                run = false;
+                try {
+                    clientKey = service.registerClient(team);
+                    //set our attributes with the service
+                    service.setAttributes(clientKey, speed, scanRange, maxLoad);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
             }
-        }
+
+            }
         return run;
     }
 
@@ -134,7 +141,8 @@ public abstract class Rover extends Agent {
                 }
 
 
-                   getLog().info("Stopping agent " + clientKey);
+                   getLog().info("Stopping active agent " + clientKey);
+
                     run  = false;
 
 
@@ -149,7 +157,7 @@ public abstract class Rover extends Agent {
     public void run() {
 
 
-        //get the RoverService
+        //get the IRoverService
         sb = getServiceBroker();
         try {
             BindService();
@@ -179,26 +187,6 @@ public abstract class Rover extends Agent {
                 e.printStackTrace();
             }
         }
-        /*
-        while (!started) {
-            inActiveAgent();
-            try {
-                Thread.sleep(200);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-
-        while (started) {
-            activeAgent();
-            try {
-                Thread.sleep(200);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-*/
-
     }
 
     //set the attributes for this rover.  Must be done before the world starts.
@@ -219,37 +207,86 @@ public abstract class Rover extends Agent {
         this.maxLoad = maxLoad;
     }
 
-    //Moves the rover to an offset from its current position
+    /**
+     * Moves the rover to an offset from its current position
+     * @param xOffset directional offset of current position on the X-Axis
+     * @param yOffset directional offset of current position on the Y-Axis
+     * @param speed movement speed towards destination
+     * @throws Exception
+     */
     public void move(double xOffset, double yOffset, double speed) throws Exception {
         BindService();
         service.move(clientKey, xOffset, yOffset, speed);
     }
 
-    //Stops whatever the current task is
+    /**
+     * Stops whatever the current task is
+     * @throws Exception
+     */
     public void stop() throws Exception {
         BindService();
         service.stop(clientKey);
     }
 
-    //Scans for locations of other rovers, bases, and resources
+    /**
+     * Broadcasts a message to all agents within the current agent's team.
+     * @param message the current message to be send to all team mates
+     */
+    public void broadCastToTeam(String message){
+        service.broadCastToTeam(clientKey,message);
+    }
+
+    /**
+     * Broadcasts a message to a specific agent within the current agent's team.
+     * @param remoteUnit the clientKey of the remote unit. The key is constructed in RoverServiceImpl in register
+     * @param message the current message to be send to one other unit
+     */
+    public void broadCastToUnit(String remoteUnit, String message){
+        service.broadCastToUnit(clientKey,remoteUnit,message);
+    }
+
+    /**
+     * retrieves all messages which were send to the current agent. The messages are stores in the messages set.
+     */
+    public void retrieveMessages(){
+        String[] post = service.receiveMessages(clientKey);
+        for (String message : post)
+            messages.add(message);
+    }
+
+
+    /**
+     * Scans for locations of other rovers, bases, and resources
+     * @param range Range in world units around the rover
+     * @throws Exception
+     */
     public void scan(double range) throws Exception {
         BindService();
         service.scan(clientKey, range);
     }
 
-    //Collects a resource from the world
+    /**
+     * Collects a resource from the world
+     * @throws Exception
+     */
     public void collect() throws Exception {
         BindService();
         service.collect(clientKey);
     }
 
-    //Deposits a resource this rover is carrying
+    /**
+     * Deposits a resource this rover is carrying
+     * @throws Exception
+     */
     public void deposit() throws Exception {
         BindService();
         service.deposit(clientKey);
     }
 
-    // Gets the energy/power this rover has remaining
+    /**
+     * Gets the energy/power this rover has remaining
+     * @return the energy amount remaining for the current agent
+     */
     public double getEnergy() {
         BindService();
 
