@@ -268,7 +268,6 @@ public class RoverService extends AbstractDefaultService implements
 	
 	@Override
 	public void collect(String client) throws Exception {
-		// TODO Auto-generated method stub
 		synchronized(this) {
 			RoverInfo ri = rovers.get(client);		
 		
@@ -565,8 +564,8 @@ public class RoverService extends AbstractDefaultService implements
      */
 	public double calcDistance(double x1, double x2, double y1, double y2) {
 	
-		double xdist = calcOffset(x1, x2, true);
-		double ydist = calcOffset(y1, y2, false);
+		double xdist = calcOffset(x1, y1, true);
+		double ydist = calcOffset(x2, y2, false);
 			
 		double dist = Math.sqrt(xdist * xdist + ydist* ydist);
 		
