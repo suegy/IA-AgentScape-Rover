@@ -556,16 +556,16 @@ public class RoverService extends AbstractDefaultService implements
 
     /**
      * calculates the distance between two points in world coordinates
-     * @param x1 x coordinate of the first point
-     * @param x2 y coordinate of the first point
-     * @param y1 x coordinate of the second point
-     * @param y2 y coordinate of the second point
+     * @param aX x coordinate of the first point
+     * @param aY y coordinate of the first point
+     * @param bX x coordinate of the second point
+     * @param bY y coordinate of the second point
      * @return
      */
-	public double calcDistance(double x1, double x2, double y1, double y2) {
+	public double calcDistance(double aX, double aY, double bX, double bY) {
 	
-		double xdist = calcOffset(x1, y1, true);
-		double ydist = calcOffset(x2, y2, false);
+		double xdist = calcOffset(aX, bX, true);
+		double ydist = calcOffset(aY, bY, false);
 			
 		double dist = Math.sqrt(xdist * xdist + ydist* ydist);
 		
