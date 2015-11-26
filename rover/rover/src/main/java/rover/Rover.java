@@ -299,7 +299,10 @@ public abstract class Rover extends Agent {
         return -1;
     }
 
-    //gets the current number of resources this rover is carrying
+    /**
+     * How much resources is the rover carrying
+     * @return current number of resources this rover is carrying
+     */
     public int getCurrentLoad() {
         BindService();
 
@@ -313,41 +316,75 @@ public abstract class Rover extends Agent {
 
     }
 
-    //The height of the world
+    /**
+     * The height of the world
+     * @return height of the world
+     */
     public int getWorldHeight() {
         BindService();
         return service.getWorldHeight();
     }
 
-    //The width of the world
+    /**
+     * The width of the world
+     * @return width of the world
+     */
     public int getWorldWidth() {
         BindService();
         return service.getWorldWidth();
     }
 
-    //The total number of resources in the world
+    /**
+     * Get The amount of resources in the world
+     * @return total sum of resources in the world
+     */
     public int getWorldResources() {
         BindService();
         return service.getWorldResources();
     }
 
     //Returns true if the scenario involves other teams/
+
+    /**
+     * Checks if the world contains other teams
+     * @return
+     */
     public boolean isWorldCompetitive() {
         BindService();
         return service.isWorldCompetitive();
     }
 
-    //Gets this client's team name
+    /**
+     * Retrieves the client id
+     * @return The id of the rover
+     */
+    public String getID() {
+        return clientKey;
+    }
+
+    /**
+     * Retrieves the team name
+     * @return The team name
+     */
     public String getTeam() {
         return team;
     }
 
     //Sets the team name
+
+    /**
+     * Sets the name of the team. This method should be used with care while the game is running
+     * because it affects how the server identifies a given team.
+     * @param team The team name
+     */
     public void setTeam(String team) {
         this.team = team;
     }
 
-    //Has the world been started
+    /**
+     * Has the world been started
+     * @return true if the world is alive
+     */
     public boolean IsStarted() {
         return started;
     }
