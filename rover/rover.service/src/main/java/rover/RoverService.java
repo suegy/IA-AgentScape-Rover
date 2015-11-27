@@ -91,7 +91,7 @@ public class RoverService extends AbstractDefaultService implements
         }
         resources = new ArrayList<ResourceInfo>();
 		Random rand = new Random();
-		
+		totalResources = 0;		
 		for(int i = 0; i < selectedScenario.getResourceCount(); i++) {
 			resources.add(new ResourceInfo(rand.nextDouble() * selectedScenario.getWidth(), rand.nextDouble() * selectedScenario.getHeight(), selectedScenario.getResourceDistribution()));
 			totalResources += selectedScenario.getResourceDistribution();
