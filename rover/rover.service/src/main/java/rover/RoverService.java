@@ -518,7 +518,7 @@ public class RoverService extends AbstractDefaultService implements
                 //FIXME:clunky code because team has no link back to team mates
                 for (RoverInfo rover : rovers.values())
                 // a rover is only allowed to send messages to its team mates
-                    if ( (ri.getTeam()==rover.getTeam()) && (remoteUnit == rover.getClientKey()))
+                    if ( (ri.getTeam()==rover.getTeam()) && (remoteUnit.equals(rover.getClientKey())) )
                         rover.receiveMessage(message);
 
 
