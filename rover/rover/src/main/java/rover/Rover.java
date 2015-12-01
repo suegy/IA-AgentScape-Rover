@@ -1,8 +1,8 @@
 package rover;
 
 import org.iids.aos.agent.Agent;
+import org.iids.aos.kernel.exception.UnknownConnectionIDException;
 import org.iids.aos.service.ServiceBroker;
-
 import javax.naming.CommunicationException;
 import java.util.HashSet;
 import java.util.Set;
@@ -90,10 +90,13 @@ public abstract class Rover extends Agent {
         try {
             pr = service.Poll(clientKey);
         } catch (CommunicationException ce) {
-            getLog().debug("too many requests from: "+clientKey);
+            getLog().debug("inactive: too many requests from: "+clientKey);
+        } catch (UnknownConnectionIDException conn) {
+            System.out.println("inactive: Server shut down "+clientKey);
+            getLog().error("inactive: Server shut down");
         } catch (Exception e1) {
             System.out.println("stuck in connection a new rover");
-            e1.printStackTrace();
+            getLog().error(e1.getMessage());
         }
         if (pr != null) {
             switch (pr.getResultType()){
@@ -138,8 +141,13 @@ public abstract class Rover extends Agent {
         PollResult pr = null;
         try {
             pr = service.Poll(clientKey);
+        } catch (CommunicationException ce) {
+            getLog().debug("active: too many requests from: "+clientKey);
+        } catch (UnknownConnectionIDException conn) {
+            System.out.println("active: Server shut down: "+clientKey);
+            getLog().error("inactive: Server shut down");
         } catch (Exception e1) {
-            e1.printStackTrace();
+            getLog().error(e1.getMessage());
         }
         if (pr != null) {
             switch (pr.getResultType())
@@ -188,7 +196,7 @@ public abstract class Rover extends Agent {
             //service.setAttributes(clientKey, speed, scanRange, maxLoad);
 
         while (connected){
-            BindService();
+            //BindService();
             if (started){
                 started = activeAgent(started);
 
@@ -196,7 +204,7 @@ public abstract class Rover extends Agent {
                 started = inActiveAgent(started);
             }
             try {
-                Thread.sleep(200);
+                Thread.sleep(100);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

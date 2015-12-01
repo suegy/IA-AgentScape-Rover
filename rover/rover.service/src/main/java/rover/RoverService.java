@@ -55,7 +55,7 @@ public class RoverService extends AbstractDefaultService implements
     }
 
     @Override
-    public void resetWorld(int scenario) {
+    public synchronized void resetWorld(int scenario) {
         logger.info("resetWorld: scenario " + scenario);
 
         Random rand = new Random();
@@ -69,7 +69,7 @@ public class RoverService extends AbstractDefaultService implements
         else
             selectedScenario = Scenario.Empty();
 
-        synchronized(this) {
+
 
 
             //inform agents the world has started
@@ -86,14 +86,14 @@ public class RoverService extends AbstractDefaultService implements
                     PollResult pr = new PollResult(PollResult.ROVER_UNKNOWN, PollResult.COMPLETE);
                     ri.setPollResult(pr);
                     try {
-                        Thread.sleep(50,0);
+                        Thread.sleep(100,0);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
 
                     }
                 }
               
-            }
+
 
         }
 
@@ -105,7 +105,7 @@ public class RoverService extends AbstractDefaultService implements
     }
 
     @Override
-    public void startWorld(int speed) {
+    public synchronized void startWorld(int speed) {
 
         logger.info("startWorld");
         this.worldSpeed = speed;
@@ -180,7 +180,7 @@ public class RoverService extends AbstractDefaultService implements
             }
         });
 
-        synchronized(this) {
+
 
             started = true;
             worldThread.start();
@@ -193,12 +193,12 @@ public class RoverService extends AbstractDefaultService implements
 
             }
 
-        }
+
     }
 
     @Override
-    public void stopWorld() {
-        synchronized (worldThread) {
+    public synchronized void stopWorld() {
+
             started = false;
 
             logger.info("Stopping World!");
@@ -219,13 +219,13 @@ public class RoverService extends AbstractDefaultService implements
             }
             stats.worldStopped();
             worldThread = null;
-        }
+
     }
 
 
 
     @Override
-    public String registerClient(String team)
+    public synchronized String registerClient(String team)
             throws Exception {
 
         logger.info("CON: " + this.getCurrentSession().getConnectionId());
@@ -236,7 +236,7 @@ public class RoverService extends AbstractDefaultService implements
         }
 
 
-        synchronized(rovers) {
+
 
             Random rand = new Random();
 
@@ -268,7 +268,7 @@ public class RoverService extends AbstractDefaultService implements
             logger.info("New client (" + team + "): " + key);
 
             return key;
-        }
+
 
 
     }

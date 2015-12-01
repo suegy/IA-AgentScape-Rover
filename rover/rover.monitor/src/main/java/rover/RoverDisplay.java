@@ -104,7 +104,6 @@ public class RoverDisplay extends JFrame implements ActionListener,WindowListene
 		scroll.setPreferredSize(new Dimension(0, 200));
 		
 		add(scroll, BorderLayout.PAGE_END);
-		
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setSize(800,800);
@@ -172,7 +171,8 @@ public class RoverDisplay extends JFrame implements ActionListener,WindowListene
 		
 				
 		//"Rover", "X", "Y", "Task", "% Complete", "Carrying", "Power", "Max Speed", "Max Range", "Max Load" };
-		
+		synchronized(info){
+
 		ArrayList<Object[]> rovers = roverTableModel.getRowData();
 		rovers.clear();
 		
@@ -207,7 +207,7 @@ public class RoverDisplay extends JFrame implements ActionListener,WindowListene
 		
 		drawPanel.setScale(10 - zoomList.getSelectedIndex());
 		drawPanel.setMonitorInfo(info);
-		
+        }
 	}
 
 
