@@ -15,6 +15,7 @@ public class PollResult implements Serializable {
 	
 	public static final int WORLD_STARTED = 10;
 	public static final int WORLD_STOPPED = 11;
+    public static final int ROVER_UNKNOWN = 12;
 	
 	
 	public static final int COMPLETE = 1;

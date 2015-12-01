@@ -3,6 +3,7 @@ package rover;
 import org.iids.aos.agent.Agent;
 import org.iids.aos.service.ServiceBroker;
 
+import javax.naming.CommunicationException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -60,7 +61,7 @@ public abstract class Rover extends Agent {
         ScanItem si = new ScanItem(1, 0, 0);
 
     }
-
+    private boolean connected = false;
     private ServiceBroker sb;
 
     /**
@@ -74,15 +75,66 @@ public abstract class Rover extends Agent {
         //of a bug in agentscape.
         try {
             service = sb.bind(IRoverService.class);
+            connected = true;
         } catch (Exception e1) {
-            e1.printStackTrace();
+            System.err.println("disconnecting rover:"+clientKey);
+            connected = false;
+            //e1.printStackTrace();
         }
     }
 
-    private boolean inActiveAgent(){
-        boolean run = true;
+    private boolean inActiveAgent(boolean running){
 
-        BindService();
+        PollResult pr = null;
+
+        try {
+            pr = service.Poll(clientKey);
+        } catch (CommunicationException ce) {
+            getLog().debug("too many requests from: "+clientKey);
+        } catch (Exception e1) {
+            System.out.println("stuck in connection a new rover");
+            e1.printStackTrace();
+        }
+        if (pr != null) {
+            switch (pr.getResultType()){
+                case PollResult.WORLD_STARTED:
+                    getLog().info("Inactive Agent: WORLD_STARTED: " + clientKey);
+
+                    //world has started
+                    running = true;
+                    //begin
+                    begin();
+                    break;
+                case PollResult.WORLD_STOPPED:
+                    // world reset after switching scenarios
+                    getLog().info("Inactive Agent: WORLD_STOPPED: " + clientKey);
+                    clientKey = null;
+                    end();
+                    running = false;
+                    break;
+                case PollResult.ROVER_UNKNOWN:
+                    getLog().info("Inactive Agent: ROVER_UNKNOWN: " + clientKey);
+                    if (pr.getResultStatus() != PollResult.WORLD_STARTED)
+                        try {
+                            clientKey = service.registerClient(team);
+                            //set our attributes with the service
+                            service.setAttributes(clientKey, speed, scanRange, maxLoad);
+                            getLog().info("Connecting agent " + clientKey);
+                            running = false;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    break;
+                default:
+                    getLog().info("Inactive Agent: Default state: " + clientKey);
+                    break;
+            }
+        }
+        return running;
+    }
+
+    private boolean activeAgent(boolean running){
+
         PollResult pr = null;
         try {
             pr = service.Poll(clientKey);
@@ -90,67 +142,34 @@ public abstract class Rover extends Agent {
             e1.printStackTrace();
         }
         if (pr != null) {
-            if (pr.getResultType() == PollResult.WORLD_STARTED) {
-                //world has started
-                started = true;
-                //begin
-                begin();
-            } else if (pr.getResultType() == PollResult.WORLD_STOPPED) {
-                // world reset after switching scenarios
-                getLog().info("Stopping inActive agent " + clientKey);
-                end();
-                run = false;
-                try {
-                    clientKey = service.registerClient(team);
-                    //set our attributes with the service
-                    service.setAttributes(clientKey, speed, scanRange, maxLoad);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            switch (pr.getResultType())
+            {
+                case PollResult.WORLD_STOPPED:
+                    getLog().info("Active Agent: WORLD_STOPPED: " + clientKey);
 
-            }
-
-            }
-        return run;
-    }
-
-    private boolean activeAgent(){
-        boolean run  = true;
-        BindService();
-
-        PollResult pr = null;
-        try {
-            pr = service.Poll(clientKey);
-        } catch (Exception e1) {
-            e1.printStackTrace();
-        }
-        if (pr != null) {
-            if (pr.getResultType() == PollResult.WORLD_STOPPED) {
-                started = false;
-
-                //call end, the world has ended.
-                end();
-
-                try {
-
-                    clientKey = service.registerClient(team);
-                    //set our attributes with the service
-                    service.setAttributes(clientKey, speed, scanRange, maxLoad);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-
-                   getLog().info("Stopping active agent " + clientKey);
-
-                    run  = false;
-
-
-            } else {
-                poll(pr);
+                    running  = false;
+                    //call end, the world has ended.
+                    end();
+                    break;
+                case PollResult.ROVER_UNKNOWN:
+                    getLog().info("Active Agent: ROVER_UNKNOWN: " + clientKey);
+                    if (pr.getResultStatus() != PollResult.WORLD_STARTED)
+                        try {
+                            clientKey = service.registerClient(team);
+                            //set our attributes with the service
+                            service.setAttributes(clientKey, speed, scanRange, maxLoad);
+                            getLog().info("Connecting agent " + clientKey);
+                            running = false;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    break;
+                default:
+                    getLog().info("Active Agent: Default state: " + clientKey);
+                    poll(pr);
             }
         }
-        return run;
+        return running;
     }
 
     @Override
@@ -159,27 +178,22 @@ public abstract class Rover extends Agent {
 
         //get the IRoverService
         sb = getServiceBroker();
-        try {
-            BindService();
+
+        BindService();
 
             //now register with the service
-            clientKey = service.registerClient(team);
+            //clientKey = service.registerClient(team);
 
             //set our attributes with the service
-            service.setAttributes(clientKey, speed, scanRange, maxLoad);
+            //service.setAttributes(clientKey, speed, scanRange, maxLoad);
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            return;
-        }
-
-        while (true){
-
+        while (connected){
+            BindService();
             if (started){
-                activeAgent();
+                started = activeAgent(started);
 
             } else {
-                inActiveAgent();
+                started = inActiveAgent(started);
             }
             try {
                 Thread.sleep(200);
@@ -198,7 +212,7 @@ public abstract class Rover extends Agent {
 
         if (service != null) {
             //set our attributes with the service
-            BindService();
+            //BindService();
             service.setAttributes(clientKey, speed, scanRange, maxLoad);
         }
 
@@ -215,7 +229,7 @@ public abstract class Rover extends Agent {
      * @throws Exception
      */
     public void move(double xOffset, double yOffset, double speed) throws Exception {
-        BindService();
+        //BindService();
         service.move(clientKey, xOffset, yOffset, speed);
     }
 
@@ -224,7 +238,7 @@ public abstract class Rover extends Agent {
      * @throws Exception
      */
     public void stop() throws Exception {
-        BindService();
+        //BindService();
         service.stop(clientKey);
     }
 
@@ -261,7 +275,7 @@ public abstract class Rover extends Agent {
      * @throws Exception
      */
     public void scan(double range) throws Exception {
-        BindService();
+        //BindService();
         service.scan(clientKey, range);
     }
 
@@ -270,7 +284,7 @@ public abstract class Rover extends Agent {
      * @throws Exception
      */
     public void collect() throws Exception {
-        BindService();
+        //BindService();
         service.collect(clientKey);
     }
 
@@ -279,7 +293,7 @@ public abstract class Rover extends Agent {
      * @throws Exception
      */
     public void deposit() throws Exception {
-        BindService();
+        //BindService();
         service.deposit(clientKey);
     }
 
@@ -288,7 +302,7 @@ public abstract class Rover extends Agent {
      * @return the energy amount remaining for the current agent
      */
     public double getEnergy() {
-        BindService();
+        //BindService();
 
         try {
             return service.getEnergy(clientKey);
@@ -304,7 +318,7 @@ public abstract class Rover extends Agent {
      * @return current number of resources this rover is carrying
      */
     public int getCurrentLoad() {
-        BindService();
+        //BindService();
 
         try {
             return service.getCurrentLoad(clientKey);
@@ -321,7 +335,7 @@ public abstract class Rover extends Agent {
      * @return height of the world
      */
     public int getWorldHeight() {
-        BindService();
+        //BindService();
         return service.getWorldHeight();
     }
 
@@ -330,7 +344,7 @@ public abstract class Rover extends Agent {
      * @return width of the world
      */
     public int getWorldWidth() {
-        BindService();
+        //BindService();
         return service.getWorldWidth();
     }
 
@@ -339,7 +353,7 @@ public abstract class Rover extends Agent {
      * @return total sum of resources in the world
      */
     public int getWorldResources() {
-        BindService();
+        //BindService();
         return service.getWorldResources();
     }
 
@@ -350,7 +364,7 @@ public abstract class Rover extends Agent {
      * @return
      */
     public boolean isWorldCompetitive() {
-        BindService();
+        //BindService();
         return service.isWorldCompetitive();
     }
 
@@ -391,7 +405,7 @@ public abstract class Rover extends Agent {
 
     //Returns the current scenario
     public int getScenario() {
-        BindService();
+        //BindService();
         return service.getScenario();
     }
 

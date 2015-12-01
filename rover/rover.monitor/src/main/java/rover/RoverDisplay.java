@@ -8,9 +8,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.util.ArrayList;
 
-public class RoverDisplay extends JFrame implements ActionListener {
+public class RoverDisplay extends JFrame implements ActionListener,WindowListener {
 
 	private WorldPanel drawPanel; 
 
@@ -108,56 +110,61 @@ public class RoverDisplay extends JFrame implements ActionListener {
 		setSize(800,800);
 		setPreferredSize(new Dimension(800,800));
 		
-		
+
 		
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		if(e.getActionCommand().equals("Start")) {
-		
-			lblStatus.setText("World Running");
-			btnStart.setEnabled(false);
-			scenarioList.setEnabled(false);
-			speedList.setEnabled(false);
-			btnSelect.setEnabled(false);
-			btnStop.setEnabled(true);
-			
-			try {
-				//service = sb.bind(IRoverService.class);
-				service.startWorld(speedList.getSelectedIndex() + 1);
-			} catch (Exception ex) {
-				ex.printStackTrace();				
-			}
-			
-			
-		} else if(e.getActionCommand().equals("Stop")) {
-			
-			lblStatus.setText("World Stopped");
-			btnStart.setEnabled(true);
-			speedList.setEnabled(true);
-			scenarioList.setEnabled(true);
-			btnSelect.setEnabled(true);
-			btnStop.setEnabled(false);
-			
-			try {
-				//service = sb.bind(IRoverService.class);
-				service.stopWorld();
-                service.resetWorld(service.getScenario());
-			} catch (Exception ex) {
-				ex.printStackTrace();				
-			}
-			
-		} else if(e.getActionCommand().equals("Select")) {
-			
-			try {
-				//service = sb.bind(IRoverService.class);
-                String value = (String)scenarioList.getSelectedItem();
-                service.resetWorld(Integer.parseInt(value.split(" ")[1]));
-			} catch (Exception ex) {
-				ex.printStackTrace();				
-			}
-			
-		}
+        switch (e.getActionCommand()){
+            case "Start":
+
+                lblStatus.setText("World Running");
+                btnStart.setEnabled(false);
+                scenarioList.setEnabled(false);
+                speedList.setEnabled(false);
+                btnSelect.setEnabled(false);
+                btnStop.setEnabled(true);
+
+                try {
+                    //service = sb.bind(IRoverService.class);
+                    service.startWorld(speedList.getSelectedIndex() + 1);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                break;
+
+            case "Stop":
+
+                lblStatus.setText("World Stopped");
+                btnStart.setEnabled(true);
+                speedList.setEnabled(true);
+                scenarioList.setEnabled(true);
+                btnSelect.setEnabled(true);
+                btnStop.setEnabled(false);
+
+                try {
+                    //service = sb.bind(IRoverService.class);
+                    service.stopWorld();
+                    service.resetWorld(service.getScenario());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                break;
+
+            case "Select":
+
+                try {
+                    //service = sb.bind(IRoverService.class);
+                    String value = (String)scenarioList.getSelectedItem();
+                    service.resetWorld(Integer.parseInt(value.split(" ")[1]));
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+
+            break;
+            default:
+                break;
+        }
 	}
 	
 
@@ -202,7 +209,40 @@ public class RoverDisplay extends JFrame implements ActionListener {
 		drawPanel.setMonitorInfo(info);
 		
 	}
-	
-	
-	
+
+
+    @Override
+    public void windowOpened(WindowEvent windowEvent) {
+
+    }
+
+    @Override
+    public void windowClosing(WindowEvent windowEvent) {
+
+    }
+
+    @Override
+    public void windowClosed(WindowEvent windowEvent) {
+        service.stopWorld();
+    }
+
+    @Override
+    public void windowIconified(WindowEvent windowEvent) {
+
+    }
+
+    @Override
+    public void windowDeiconified(WindowEvent windowEvent) {
+
+    }
+
+    @Override
+    public void windowActivated(WindowEvent windowEvent) {
+
+    }
+
+    @Override
+    public void windowDeactivated(WindowEvent windowEvent) {
+
+    }
 }

@@ -29,8 +29,8 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="1.7">
-      <module name="rover-agent" target="1.6" />
-      <module name="rover-monitor" target="1.6" />
+      <module name="rover-agent" target="1.7" />
+      <module name="rover-monitor" target="1.7" />
       <module name="rover.service" target="1.6" />
       <module name="rover.shared" target="1.6" />
     </bytecodeTargetLevel>

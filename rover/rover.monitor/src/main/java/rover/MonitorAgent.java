@@ -5,6 +5,7 @@ import javax.swing.SwingUtilities;
 import org.iids.aos.agent.Agent;
 import org.iids.aos.service.ServiceBroker;
 
+import org.iids.aos.service.ServiceException;
 import rover.MonitorInfo.Resource;
 import rover.MonitorInfo.Rover;
 import rover.MonitorInfo.Team;
@@ -18,14 +19,12 @@ public class MonitorAgent extends Agent  {
 	private IRoverService service;
 	
 	private ServiceBroker sb;
-	private Thread thread;
 	private RoverDisplay display;
 	
 	public MonitorAgent() {
 		service = null;
 		sb = null;
-		thread = null;
-        display = null;
+		display = null;
 		
 		//preload cause of agentscape bug;
 		MonitorInfo mi = new MonitorInfo(0, 0);
@@ -64,7 +63,7 @@ public class MonitorAgent extends Agent  {
 	
 	private void runMonitor() {
 
-
+                boolean connected = true;
                 Runnable updateDisplay = new Runnable() {
                     @Override
                     public void run() {
@@ -73,12 +72,17 @@ public class MonitorAgent extends Agent  {
                     }
                 };
 
-				while(display.isVisible()) {
+				while(display.isVisible() &&  connected) {
 
                     try {
                         service = sb.bind(IRoverService.class);
+                        connected = true;
 
-                    } catch (Exception e) {
+                    } catch (ServiceException s) {
+                        connected = false;
+                        return;
+                    }
+                    catch (Exception e) {
                         e.printStackTrace();
 
                         return;
