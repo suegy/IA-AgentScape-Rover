@@ -258,14 +258,24 @@ public abstract class Rover extends Agent {
     public void broadCastToUnit(String remoteUnit, String message){
         service.broadCastToUnit(clientKey,remoteUnit,message);
     }
+    
+    /**
+     * Called when a message is added to messages.
+     * @param message Message received
+     */
+    protected void receiveMessage(String message) {
+        //Do nothing.
+    }
 
     /**
      * retrieves all messages which were send to the current agent. The messages are stores in the messages set.
      */
     public void retrieveMessages(){
         String[] post = service.receiveMessages(clientKey);
-        for (String message : post)
+        for (String message : post) {
             messages.add(message);
+            receiveMessage(message);
+        }
     }
 
 
